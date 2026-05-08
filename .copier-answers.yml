@@ -1,0 +1,13 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: 2026.04.04
+_src_path: https://github.com/scientific-python/cookie
+backend: setuptools
+docs: sphinx
+email: jmaldonad@bnl.gov
+full_name: Jennefer Maldonado
+license: BSD
+org: NSLS2
+project_name: isrtools
+project_short_description: Collection of tools used across hutches at ISR
+url: https://github.com/NSLS2/isrtools
+vcs: true
