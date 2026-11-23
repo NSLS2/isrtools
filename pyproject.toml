@@ -7,6 +7,7 @@ name = "isrtools"
 authors = [
   { name = "Brookhaven National Laboratory", email = "jmaruland@bnl.gov" },
 ]
+readme = "README.md"
 description = "Importable tools for ISR beamline"
 license = "BSD-3-Clause"
 requires-python = ">=3.11,<3.14"
@@ -82,6 +83,10 @@ version-file = "src/isrtools/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/isrtools"]
+core-metadata-version = "2.4"
+
+[tool.hatch.build.targets.sdist]
+core-metadata-version = "2.4"
 
 [tool.pyright]
 typeCheckingMode = "standard"
