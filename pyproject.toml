@@ -1,165 +1,166 @@
 [build-system]
-requires = ["setuptools>=77", "setuptools_scm[toml]>=7"]
-build-backend = "setuptools.build_meta"
-
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
 [project]
 name = "isrtools"
 authors = [
-  { name = "Jennefer Maldonado", email = "jmaldonad@bnl.gov" },
+  { name = "Brookhaven National Laboratory", email = "jmaruland@bnl.gov" },
 ]
-description = "Collection of tools used across hutches at ISR"
-readme = "README.md"
+description = "Importable tools for ISR beamline"
 license = "BSD-3-Clause"
-license-files = ["LICENSE"]
-requires-python = ">=3.10"
+requires-python = ">=3.11,<3.14"
 classifiers = [
-  "Development Status :: 1 - Planning",
   "Intended Audience :: Science/Research",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
-  "Programming Language :: Python :: 3.14",
   "Topic :: Scientific/Engineering",
   "Typing :: Typed",
 ]
 dynamic = ["version"]
-dependencies = []
+dependencies = [
+  "bluesky",
+  "tiled[client]",
+  "bluesky-tiled-plugins",
+  "ophyd-async[ca, pva, sim]",
+  "nslsii",
+]
+
+[dependency-groups]
+dev = [
+  "import-linter",
+  "mdformat",
+  "mdformat-frontmatter",
+  "nbstripout",
+  "pre-commit",
+  "pre-commit-hooks",
+  "pyright",
+  "pytest",
+  "pytest-asyncio",
+  "pytest-cov",
+  "pytest-mock",
+  "pytest-timeout",
+  "ruff",
+  "tiled[client,server]",
+]
+docs = [
+  "pydata-sphinx-theme>=0.12",
+  "myst-parser",
+  "sphinx-autobuild",
+  "sphinx-autodoc2",
+  "sphinxcontrib-mermaid",
+  "sphinx-copybutton",
+  "sphinx-design",
+]
 
 [project.urls]
 Homepage = "https://github.com/NSLS2/isrtools"
-"Bug Tracker" = "https://github.com/NSLS2/isrtools/issues"
-Discussions = "https://github.com/NSLS2/isrtools/discussions"
+Issues = "https://github.com/NSLS2/isrtools/issues"
 Changelog = "https://github.com/NSLS2/isrtools/releases"
 
+[tool.hatch.version]
+source = "vcs"
 
-[dependency-groups]
-test = [
-  "pytest >=9",
-  "pytest-cov >=7",
-]
-dev = [
-  { include-group = "test" },
-]
-docs = [
-  "sphinx>=7.0",
-  "myst_parser>=0.13",
-  "sphinx_copybutton",
-  "sphinx_autodoc_typehints",
-  "furo>=2023.08.17",
-]
+[tool.hatch.metadata]
+allow-direct-references = true
 
+[tool.hatch.build]
+artifacts = ["src/isrtools/_version.py"]
 
-[tool.setuptools_scm]
-write_to = "src/isrtools/_version.py"
+[tool.hatch.version.raw-options]
+fallback_version = "0.0.0"
+local_scheme = "no-local-version"
 
+[tool.hatch.build.hooks.vcs]
+version-file = "src/isrtools/_version.py"
 
-[tool.pytest]
-minversion = "9.0"
-addopts = ["-ra", "--showlocals"]
-strict = true
+[tool.hatch.build.targets.wheel]
+packages = ["src/isrtools"]
+
+[tool.pyright]
+typeCheckingMode = "standard"
+
+[tool.pytest.ini_options]
+# Run pytest with all our checkers, and don't spam us with massive tracebacks on error
+addopts = """
+    --tb=native -vv --strict-markers --doctest-modules
+    --doctest-glob="*.rst" --doctest-glob="*.md"
+    --ignore=docs/examples --ignore=docs/_scripts --ignore=src/isrtools/profiles
+    """
+# https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
 filterwarnings = [
-  "error",
+    "error",
+    "ignore:tagMap is deprecated:DeprecationWarning:ldap3",
+    "ignore:typeMap is deprecated:DeprecationWarning:ldap3",
 ]
-log_level = "INFO"
-testpaths = [
-  "tests",
-]
+# Doctest python code in docs, python code in src docstrings, test functions in tests
+testpaths = "docs src tests"
+log_format = "%(asctime)s,%(msecs)03d %(levelname)s (%(threadName)s) %(message)s"
+log_date_format = "%H:%M:%S"
 
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+timeout = 60
 
-[tool.coverage]
-run.source = ["isrtools"]
-report.exclude_also = [
-  '\.\.\.',
-  'if typing.TYPE_CHECKING:',
-]
+[tool.coverage.run]
+patch = ["subprocess"]
+# branch = true
 
-[tool.mypy]
-files = ["src", "tests"]
-python_version = "3.10"
-warn_unused_configs = true
-strict = true
-enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
-warn_unreachable = true
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-
-[[tool.mypy.overrides]]
-module = "isrtools.*"
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-
+[tool.coverage.paths]
+# Tests are run from installed location, map back to the src directory
+source = ["src"]
 
 [tool.ruff]
-show-fixes = true
+target-version = "py311"
+line-length = 88
+lint.select = [
+  "B",       # flake8-bugbear
+  "C4",      # flake8-comprehensions
+  "D",       # pydocstyle
+  "E",       # pycodestyle errors
+  "F",       # Pyflakes
+  "I",       # isort
+  "LOG015",  # root logger calls
+  "N",       # pep8-naming
+  "PLC2701", # private imports
+  "S101",    # assert
+  "SLF",     # private member access
+  "UP",      # pyupgrade
+  "W",       # pycodestyle warnings
+]
+lint.ignore = [
+  "B901", # Return in a generator is needed for plans
+  "D102", # Inherited abstract methods do not need duplicate docstrings.
+  "D107", # Class docstrings document initialization.
+]
+lint.preview = true
 
-[tool.ruff.lint]
-extend-select = [
-  "ARG",    # flake8-unused-arguments
-  "B",      # flake8-bugbear
-  "BLE",    # flake8-blind-except
-  "C4",     # flake8-comprehensions
-  "DTZ",    # flake8-datetimez
-  "EM",     # flake8-errmsg
-  "EXE",    # flake8-executable
-  "FA",     # flake8-future-annotations
-  "FLY",    # flynt
-  "FURB",   # refurb
-  "G",      # flake8-logging-format
-  "I",      # isort
-  "ICN",    # flake8-import-conventions
-  "ISC",    # flake8-implicit-str-concat
-  "LOG",    # flake8-logging
-  "NPY",    # NumPy specific rules
-  "PD",     # pandas-vet
-  "PERF",   # perflint
-  "PGH",    # pygrep-hooks
-  "PIE",    # flake8-pie
-  "PL",     # pylint
-  "PT",     # flake8-pytest-style
-  "PTH",    # flake8-use-pathlib
-  "PYI",    # flake8-pyi
-  "Q",      # flake8-quotes
-  "RET",    # flake8-return
-  "RSE",    # flake8-raise
-  "RUF",    # Ruff-specific
-  "SIM",    # flake8-simplify
-  "SLOT",   # flake8-slots
-  "T10",    # flake8-debugger
-  "T20",    # flake8-print
-  "TC",     # flake8-type-checking
-  "TRY",    # tryceratops
-  "UP",     # pyupgrade
-  "YTT",    # flake8-2020
-]
-ignore = [
-  "PLR09",    # Too many <...>
-  "PLR2004",  # Magic value used in comparison
-]
-# Uncomment if using a _compat.typing backport
-# typing-modules = ["isrtools._compat.typing"]
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.isort]
+known-first-party = ["isrtools"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["T20"]
-"noxfile.py" = ["T20"]
+# By default, private member access is allowed in tests
+"tests/**/*" = ["D", "S101", "SLF001"]
+# Profiles import names for use in the interactive session
+"src/isrtools/profiles/**/*" = ["F401"]
 
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+# We often shorten "Annotated" to "A" for brevity
+# in ophyd-async declarative style devices
+"typing.Annotated" = "A"
 
-[tool.pylint]
-py-version = "3.10"
-ignore-paths = [".*/_version.py"]
-reports.output-format = "colorized"
-similarities.ignore-imports = "yes"
-messages_control.disable = [
-  "design",
-  "fixme",
-  "line-too-long",
-  "missing-module-docstring",
-  "missing-function-docstring",
-  "wrong-import-position",
-]
+[tool.ruff.lint.pep8-naming]
+# The fixture RE is commonly used in tests
+extend-ignore-names = ["RE"]
+
+[tool.importlinter]
+root_package = "isrtools"
