@@ -1,0 +1,121 @@
+[workspace]
+channels = ["conda-forge"]
+name = "isrtools"
+platforms = ["linux-64"]
+version = "0.1.0"
+requires-pixi = ">=0.82.1"
+exclude-newer = "7days"
+
+# Skip packages published in the last 7 days to limit exposure to compromised releases
+[exclude-newer]
+cutoff = "7days"
+# Security floors in [dependencies] may need fixes published within the cooldown
+ca-certificates = "0d"
+certifi = "0d"
+pip = "0d"
+# Packages managed by us or direct collaborators
+bluesky = "0d"
+bluesky-base = "0d"
+bluesky-tiled-plugins = "0d"
+event-model = "0d"
+nslsii = "0d"
+ophyd = "0d"
+ophyd-async = "0d"
+redis-json-dict = "0d"
+tiled = "0d"
+tiled-base = "0d"
+tiled-client = "0d"
+tiled-server = "0d"
+tiled-formats="0d"
+
+[dependencies]
+bluesky = ">=1.16.0,<2"
+bluesky-tiled-plugins = ">=2.0.13,<3"
+ca-certificates = ">=2026.10.23,<2027"
+certifi = ">=2026.10.23,<2027"
+ipython = ">=9.18.1,<10"
+#nslsii = ">=0.13.0,<0.14"
+ophyd-async = ">=0.21.4,<0.22"
+pip = ">=26.2.2,<27"
+python = ">=3.11,<3.14"
+redis-json-dict = ">=0.2.2,<0.3"
+tiled-client = ">=0.2.22,<0.3"
+
+[pypi-dependencies]
+isrtools = { path = ".", editable = true }
+nslsii = { git = "https://github.com/NSLS2/nslsii", rev = "main" }
+
+[feature.profile.dependencies]
+
+[feature.qs.pypi-dependencies]
+bluesky-httpserver = ">=0.0.14, <0.0.15"
+bluesky-queueserver = ">=0.0.25, <0.0.26"
+bluesky-queueserver-api = ">=0.0.13, <0.0.14"
+
+
+[feature.qs.tasks]
+# This section needs some development work to understand the best way to
+# thread the required configuration through both the task and files checked into
+# the profile.  These will interact with the ansible roles for pushing out the
+# systemd units
+qs-backend = "start-re-manager --profile-dir=."
+qs-server = "uvicorn --host localhost --port 60610 bluesky_httpserver.server:app"
+
+[feature.terminal.dependencies]
+matplotlib = ">=3.11.2,<4"
+nexpy = ">=2.1.0,<3"
+pyside6 = ">=6.11.3,<7"
+qtpy = ">=2.4.3,<3"
+
+[feature.terminal.tasks.start]
+# Extra arguments, e.g. `--mock`, are forwarded to the profile
+cmd = "test -n \"$BS_PROFILE\" || (echo 'BS_PROFILE is not set, e.g. BS_PROFILE=collection' && exit 1) && unset SESSION_MANAGER PYTHONPATH PYTHONUSERBASE && MPLBACKEND=qtagg ipython -i src/isrtools/profiles/$BS_PROFILE.py --"
+
+[feature.py311.dependencies]
+python = "3.11.*"
+
+[feature.py312.dependencies]
+python = "3.12.*"
+
+[feature.py313.dependencies]
+python = "3.13.*"
+
+[feature.dev.dependencies]
+copier = ">=9.19.1,<10"
+hatch = ">=1.18.2,<2"
+import-linter = ">=2.15,<3"
+inflection = ">=0.5.1,<0.6"
+mdformat = ">=1.0.0,<2"
+mdformat-frontmatter = ">=2.1.2,<3"
+nbstripout = ">=0.9.1,<0.10"
+pre-commit = ">=4.7.0,<5"
+pre-commit-hooks = ">=6.0.0,<7"
+pyright = ">=1.1.414,<2"
+pytest = ">=9.2.0,<10"
+pytest-asyncio = ">=1.4.1.post1,<2"
+pytest-cov = ">=7.1.0,<8"
+pytest-mock = ">=3.17.0,<4"
+pytest-timeout = ">=2.4.0,<3"
+ruff = ">=0.17.3,<0.18"
+tiled-server = ">=0.2.21,<0.3"
+
+[feature.dev.tasks]
+tests = "pytest --cov=src/isrtools --cov-report=term"
+lint = "pre-commit run --all-files"
+update-template = "copier update --trust ."
+
+[environments]
+# Base environments
+default = { solve-group = "default" }
+dev = { features = ["profile", "terminal", "dev"], solve-group = "default" }
+
+# Profile environments
+terminal = {features = ["profile", "terminal"], solve-group = "profile"}
+
+# Python version specific environments for CI
+py311 = { features = ["profile", "terminal", "dev", "py311"], solve-group = "py311" }
+py312 = { features = ["profile", "terminal", "dev", "py312"], solve-group = "py312" }
+py313 = { features = ["profile", "terminal", "dev", "py313"], solve-group = "py313" }
+
+# Queueserver environment
+qs = { features = ["profile", "qs"], solve-group = "qs" }

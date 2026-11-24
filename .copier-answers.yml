@@ -1,13 +1,11 @@
 # Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
-_commit: 2026.04.04
-_src_path: https://github.com/scientific-python/cookie
-backend: setuptools
-docs: sphinx
-email: jmaldonad@bnl.gov
-full_name: Jennefer Maldonado
-license: BSD
-org: NSLS2
+_commit: 2e987d3
+_src_path: git@github.com:NSLS2/nsls2-tools-template.git
+author_email: jmaruland@bnl.gov
+author_name: Brookhaven National Laboratory
+copyright_year: '2026'
+github_organization: NSLS2
+package_name: isrtools
+project_description: Importable tools for ISR beamline
 project_name: isrtools
-project_short_description: Collection of tools used across hutches at ISR
-url: https://github.com/NSLS2/isrtools
-vcs: true
+repository_name: isrtools

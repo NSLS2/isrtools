@@ -1,87 +1,64 @@
 name: CI
 
 on:
-  workflow_dispatch:
   pull_request:
   push:
     branches:
       - main
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-env:
-  # Many color libraries just need this variable to be set to any value.
-  # Set it to 3 to support 8-bit color graphics (256 colors per channel)
-  # for libraries that care about the value set.
-  FORCE_COLOR: 3
+permissions:
+  contents: read
 
 jobs:
   lint:
-    name: Format
+    name: Lint
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v6
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      - uses: actions/setup-python@v6
+      - name: Install pixi environment
+        uses: prefix-dev/setup-pixi@ad1da6449d9e506fd127fd67ab2d054a769f6a94 # v0.11.2
         with:
-          python-version: "3.x"
+          pixi-version: v0.82.1
+          environments: dev
 
-      - uses: astral-sh/setup-uv@v7
+      - name: Run pre-commit checks
+        run: pixi run --as-is -e dev pre-commit run --all-files --show-diff-on-failure
 
-      - uses: j178/prek-action@v2
-
-      - name: Run Pylint
-        run: uvx nox -s pylint -- --output-format=github
-
-  checks:
-    name: Check Python ${{ matrix.python-version }} on ${{ matrix.runs-on }}
-    runs-on: ${{ matrix.runs-on }}
+  unit-tests:
+    name: Unit Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.14"]
-        runs-on: [ubuntu-latest, windows-latest, macos-latest, macos-15-intel]
-
         include:
-          - python-version: "pypy-3.11"
-            runs-on: ubuntu-latest
-
+          - environment: py311
+            python-version: "3.11"
+          - environment: py312
+            python-version: "3.12"
+          - environment: py313
+            python-version: "3.13"
     steps:
-      - uses: actions/checkout@v6
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      - uses: actions/setup-python@v6
+      - name: Install pixi environment
+        uses: prefix-dev/setup-pixi@ad1da6449d9e506fd127fd67ab2d054a769f6a94 # v0.11.2
         with:
-          python-version: ${{ matrix.python-version }}
-          allow-prereleases: true
+          pixi-version: v0.82.1
+          environments: ${{ matrix.environment }}
 
-      - uses: astral-sh/setup-uv@v7
+      - name: Run tests
+        run: pixi run --as-is -e ${{ matrix.environment }} tests
 
-      - name: Install package
-        run: uv sync
-
-      - name: Test package
-        run: >-
-          uv run pytest -ra --cov --cov-report=xml --cov-report=term
-          --durations=20
-
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v6
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-
-  pass:
-    if: always()
-    needs: [lint, checks]
-    runs-on: ubuntu-slim
-    timeout-minutes: 2
-    steps:
-      - name: Decide whether the needed jobs succeeded or failed
-        uses: re-actors/alls-green@release/v1
-        with:
-          jobs: ${{ toJSON(needs) }}
+      - name: Build distributions
+        run: pixi run --as-is -e ${{ matrix.environment }} hatch build
