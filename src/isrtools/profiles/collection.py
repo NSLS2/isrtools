@@ -84,7 +84,7 @@ RE.md["versions"]["isrtools"] = isrtools.__version__
 
 # Beamline and facility metadata
 RE.md["facility"] = "NSLS-II"
-RE.md["beamline_id"] = ""  # Set the beamline ID (i.e. 27-ID-1)
+RE.md["beamline_id"] = "04-ID"  # Set the beamline ID (i.e. 27-ID-1)
 
 # Attempt to extract TLA from environment variables.
 RE.md["group"] = TLA.upper()

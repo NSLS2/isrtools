@@ -21,12 +21,18 @@ nox.needs_version = ">=2025.2.9"
 nox.options.default_venv_backend = "uv|virtualenv"
 
 
-@nox.session
+@nox.session(venv_backend="none")
 def lint(session: nox.Session) -> None:
     """Run the linter."""
-    session.install("prek")
     session.run(
-        "prek", "run", "--all-files", "--show-diff-on-failure", *session.posargs
+        "pixi",
+        "run",
+        "-e",
+        "dev",
+        "lint",
+        "--show-diff-on-failure",
+        *session.posargs,
+        external=True,
     )
 
 
@@ -42,7 +48,7 @@ def pylint(session: nox.Session) -> None:
 @nox.session
 def tests(session: nox.Session) -> None:
     """Run the unit and regular tests."""
-    test_deps = nox.project.dependency_groups(PROJECT, "test")
+    test_deps = nox.project.dependency_groups(PROJECT, "dev")
     session.install("-e.", *test_deps)
     session.run("pytest", *session.posargs)
 

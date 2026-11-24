@@ -29,7 +29,7 @@ dependencies = [
   "bluesky",
   "tiled[client]",
   "bluesky-tiled-plugins",
-  "ophyd-async[ca, pva, sim]",
+  "ophyd-async[ca,pva,sim]>=0.21.4,<0.22",
   "nslsii",
 ]
 
@@ -53,6 +53,8 @@ dev = [
 docs = [
   "pydata-sphinx-theme>=0.12",
   "myst-parser",
+  "furo",
+  "sphinx-autodoc-typehints",
   "sphinx-autobuild",
   "sphinx-autodoc2",
   "sphinxcontrib-mermaid",
