@@ -34,7 +34,7 @@ bluesky-tiled-plugins = ">=2.0.13,<3"
 ca-certificates = ">=2026.10.23,<2027"
 certifi = ">=2026.10.23,<2027"
 ipython = ">=9.18.1,<10"
-nslsii = ">=0.12.0,<0.13"
+#nslsii = ">=0.13.0,<0.14"
 ophyd-async = ">=0.21.4,<0.22"
 pip = ">=26.2.2,<27"
 python = ">=3.11,<3.14"
@@ -43,6 +43,7 @@ tiled-client = ">=0.2.22,<0.3"
 
 [pypi-dependencies]
 isrtools = { path = ".", editable = true }
+nslsii = { git = "https://github.com/NSLS2/nslsii", rev = "main" }
 
 [feature.profile.dependencies]
 
@@ -97,7 +98,6 @@ pytest-mock = ">=3.17.0,<4"
 pytest-timeout = ">=2.4.0,<3"
 ruff = ">=0.17.3,<0.18"
 tiled-server = ">=0.2.21,<0.3"
-nox = ">=2025.2.9"
 
 [feature.dev.tasks]
 tests = "pytest --cov=src/isrtools --cov-report=term"

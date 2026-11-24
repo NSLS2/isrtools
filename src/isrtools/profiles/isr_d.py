@@ -18,6 +18,7 @@ from IPython.core.getipython import get_ipython
 from IPython.terminal.interactiveshell import TerminalInteractiveShell
 from nslsii import configure_bluesky_json_logging
 from nslsii.ophyd_async.providers import NSLS2PathProvider
+from nslsii.ophyd_async.devices import XYStage, Slits, Shutter, PPSShutter, NSLS2StorageRing
 from nslsii.utils import (
     ProposalIDPrompt,
     open_redis_client,
@@ -31,7 +32,7 @@ from redis_json_dict.redis_json_dict import RedisJSONDict
 from tiled.client import from_uri, simple
 
 import isrtools
-from isrtools.devices.motors import DCM
+from isrtools.devices.motors import DCM, DPP, FocusingMirror
 
 # Have ophyd-async keep detector state constant when not explicitly overridden
 os.environ["OPHYD_ASYNC_PRESERVE_DETECTOR_STATE"] = "YES"
@@ -109,7 +110,7 @@ if ipython is not None and isinstance(ipython, TerminalInteractiveShell):
 # Write log records of bluesky, ophyd, ophyd-async, nslsii, this package, and IPython,
 # plus a summary of every document RE emits, as JSON lines for log collectors such as
 # Grafana Alloy/Loki. Files go to $BLUESKY_JSON_LOG_DIR (default /var/log/bluesky).
-if MOCK:
+if MOCK or not os.environ["USER"] == "xf04id":
     os.environ.setdefault("BLUESKY_JSON_LOG_DIR", "/tmp/bluesky-logs")
     os.makedirs(os.environ["BLUESKY_JSON_LOG_DIR"], exist_ok=True)
 configure_bluesky_json_logging(
@@ -148,7 +149,20 @@ path_provider = NSLS2PathProvider(RE.md)
 
 # Initialize all async devices within this context manager
 with init_devices(mock=MOCK, timeout=2.0, on_connect_hook=print_connection_status):
+    print("Initializing devices...\n")
+    storage_ring = NSLS2StorageRing()
+
     dcm = DCM("XF:04IDA-OP:1{Mono:DCM", name="dcm")
+
+    bpm1_sr1 = XYStage("XF:04IDA-BI:0{BPM:1_SR1-Ax:")
+    bpm1_sr2 = XYStage("XF:04IDA-BI:0{BPM:1_SR2-Ax:")
+    bpm2 = Slits("XF:04IDA-BI:1{BPM:2-Ax:")
+    bpm3 = XYStage("XF:04IDB-BI:1{BPM:3-Ax:")
+
+    hfm = FocusingMirror("XF:04IDA-OP:1{Mir:HFM")
+    vfm = FocusingMirror("XF:04IDA-OP:1{Mir:VFM")
+    dpp =  DPP("XF:04IDA-OP:1{DPP")
+
 
 # Subscribe the best effort callback
 bec = BestEffortCallback()
