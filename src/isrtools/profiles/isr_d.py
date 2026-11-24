@@ -18,8 +18,6 @@ from IPython.core.getipython import get_ipython
 from IPython.terminal.interactiveshell import TerminalInteractiveShell
 from nslsii import configure_bluesky_json_logging
 from nslsii.ophyd_async.providers import NSLS2PathProvider
-from ophyd_async.epics.advimba import VimbaDetector
-from ophyd_async.epics.adcore import ADWriterFactory
 from nslsii.utils import (
     ProposalIDPrompt,
     open_redis_client,
@@ -27,6 +25,8 @@ from nslsii.utils import (
     print_version_info,
 )
 from ophyd_async.core import init_devices, print_connection_status
+from ophyd_async.epics.adcore import ADWriterFactory
+from ophyd_async.epics.advimba import VimbaDetector
 from redis_json_dict.redis_json_dict import RedisJSONDict
 from tiled.client import from_uri, simple
 

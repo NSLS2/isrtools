@@ -18,8 +18,6 @@ from IPython.core.getipython import get_ipython
 from IPython.terminal.interactiveshell import TerminalInteractiveShell
 from nslsii import configure_bluesky_json_logging
 from nslsii.ophyd_async.providers import NSLS2PathProvider
-from ophyd_async.epics.advimba import VimbaDetector
-from ophyd_async.epics.adcore import ADWriterFactory
 from nslsii.utils import (
     ProposalIDPrompt,
     open_redis_client,
@@ -27,6 +25,8 @@ from nslsii.utils import (
     print_version_info,
 )
 from ophyd_async.core import init_devices, print_connection_status
+from ophyd_async.epics.adcore import ADWriterFactory
+from ophyd_async.epics.advimba import VimbaDetector
 from redis_json_dict.redis_json_dict import RedisJSONDict
 from tiled.client import from_uri, simple
 
@@ -149,9 +149,15 @@ path_provider = NSLS2PathProvider(RE.md)
 # Initialize all async devices within this context manager
 with init_devices(mock=MOCK, timeout=2.0, on_connect_hook=print_connection_status):
     dcm = DCM("XF:04IDA-OP:1{Mono:DCM", name="dcm")
-    ccam = VimbaDetector("XF:04IDC-BI:1{Scr:3}", ADWriterFactory.tiff(path_provider=path_provider))
-    vbd1 = VimbaDetector("XF:04IDA-BI:1{Scr:1}", ADWriterFactory.tiff(path_provider=path_provider))
-    vbd2 = VimbaDetector("XF:04IDA-BI:1{Scr:2}", ADWriterFactory.tiff(path_provider=path_provider))
+    ccam = VimbaDetector(
+        "XF:04IDC-BI:1{Scr:3}", ADWriterFactory.tiff(path_provider=path_provider)
+    )
+    vbd1 = VimbaDetector(
+        "XF:04IDA-BI:1{Scr:1}", ADWriterFactory.tiff(path_provider=path_provider)
+    )
+    vbd2 = VimbaDetector(
+        "XF:04IDA-BI:1{Scr:2}", ADWriterFactory.tiff(path_provider=path_provider)
+    )
 
 # Subscribe the best effort callback
 bec = BestEffortCallback()

@@ -2,14 +2,10 @@
 
 
 class Example:
-    """This class exists to show off autodocstring generation."""
+    """Class exists to show off autodocstring generation."""
 
     def add(self, a: int, b: int) -> int:
         """Add two integers.
-
-        Notes
-        -----
-            Docstring can be useful. I promise.
 
         Parameters
         ----------
@@ -19,6 +15,10 @@ class Example:
         Returns
         -------
             The sum of the two integers.
+
+        Notes
+        -----
+            Docstring can be useful. I promise.
         """
         return a + b
 
